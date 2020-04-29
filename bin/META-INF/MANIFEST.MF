@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Rsrc-Class-Path: ./ ojdbc7.jar
+Class-Path: .
+Rsrc-Main-Class: LayerChanger
+Main-Class: org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader
+
