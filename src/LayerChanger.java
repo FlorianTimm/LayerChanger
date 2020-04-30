@@ -54,6 +54,8 @@ public class LayerChanger extends JFrame implements WindowListener, ActionListen
     private Document doc;
     private NodeList layers;
     private NodeTable table;
+    private JLabel labelStand;
+    private String serverUrl;
 
     public static void main(String[] args) {
         new LayerChanger();
@@ -82,11 +84,11 @@ public class LayerChanger extends JFrame implements WindowListener, ActionListen
 
             int result = JOptionPane.showConfirmDialog(this, myPanel, "TTSIB-Login", JOptionPane.OK_CANCEL_OPTION);
             if (result == JOptionPane.OK_OPTION) {
-                String server = sField.getText();
+                this.serverUrl = sField.getText();
                 String user = uField.getText();
                 String passwort = new String(pField.getPassword());
 
-                con = connect(server, user, passwort);
+                con = connect(this.serverUrl, user, passwort);
 
             } else {
                 System.exit(0);
@@ -100,7 +102,8 @@ public class LayerChanger extends JFrame implements WindowListener, ActionListen
 
         try {
             NodeList layers = this.getValuesFromDB();
-            panel.add(new JLabel("Stand: " + this.stand), BorderLayout.NORTH);
+            this.labelStand = new JLabel("Stand: " + this.stand);
+            panel.add(this.labelStand, BorderLayout.NORTH);
             this.table = new NodeTable(new NodeTableModel(layers));
             panel.add(new JScrollPane(table), BorderLayout.CENTER);
             JButton button = new JButton("Speichern");
@@ -170,6 +173,7 @@ public class LayerChanger extends JFrame implements WindowListener, ActionListen
         Date date = new Date();
         PrintWriter out = new PrintWriter(dateFormat.format(date) + "_" + suffix + ".txt");
         out.println(stand);
+        out.println(this.serverUrl);
         out.println(xml);
         out.close();
     }
@@ -342,7 +346,9 @@ public class LayerChanger extends JFrame implements WindowListener, ActionListen
             pst.execute();
 
             JOptionPane.showMessageDialog(this, "Gespeichert!");
-            System.exit(0);
+
+            this.labelStand.setText("Stand: " + standNeu);
+            this.stand = standNeu;
         } catch (Exception e1) {
             e1.printStackTrace();
         }
