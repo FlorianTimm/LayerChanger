@@ -19,9 +19,11 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -56,6 +58,8 @@ public class LayerChanger extends JFrame implements WindowListener, ActionListen
     private NodeTable table;
     private JLabel labelStand;
     private String serverUrl;
+    private JComboBox<String> optionWorkspace;
+    private String selectedWorkspace;
 
     public static void main(String[] args) {
         new LayerChanger();
@@ -66,7 +70,7 @@ public class LayerChanger extends JFrame implements WindowListener, ActionListen
         Connection con = null;
         do {
             JTextField sField = new JTextField(10);
-            sField.setText("gv-srv-w00118:1521/TTSIB");
+            sField.setText("10.62.135.134:6543/PVERKTO001");
             JTextField uField = new JTextField(10);
             uField.setText("SYSADM5");
             JPasswordField pField = new JPasswordField(10);
@@ -101,9 +105,24 @@ public class LayerChanger extends JFrame implements WindowListener, ActionListen
         panel.setLayout(new BorderLayout());
 
         try {
+
+            JPanel north = new JPanel();
+            panel.add(north, BorderLayout.NORTH);
+            this.optionWorkspace = new JComboBox<String>(this.getWorkspace());
+            north.add(this.optionWorkspace);
+            selectedWorkspace = (String) optionWorkspace.getSelectedItem();
+            this.optionWorkspace.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    selectedWorkspace = (String) optionWorkspace.getSelectedItem();
+                    System.out.println(selectedWorkspace);
+                    refreshData();
+                }
+            });
             NodeList layers = this.getValuesFromDB();
-            this.labelStand = new JLabel("Stand: " + this.stand);
-            panel.add(this.labelStand, BorderLayout.NORTH);
+            this.labelStand = new JLabel(selectedWorkspace + ", Stand: " + this.stand);
+            north.add(this.labelStand);
+
             this.table = new NodeTable(new NodeTableModel(layers));
             panel.add(new JScrollPane(table), BorderLayout.CENTER);
             JButton button = new JButton("Speichern");
@@ -145,11 +164,39 @@ public class LayerChanger extends JFrame implements WindowListener, ActionListen
         this.setVisible(true);
     }
 
-    private NodeList getValuesFromDB() throws Exception {
-        Statement st = this.con.createStatement();
+    private void refreshData() {
+        try {
+            NodeList layers = this.getValuesFromDB();
+            this.labelStand.setText(selectedWorkspace + ", Stand: " + this.stand);
+            this.table.setModel(new NodeTableModel(layers));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    private String[] getWorkspace() throws Exception {
+        Statement st = this.con.createStatement();
         ResultSet r = st.executeQuery(
-                "SELECT STAND, WERT FROM SYSADM5.PTOPT_TEMPL WHERE PTOPT_ID = (SELECT ID FROM SYSADM5.PTOPT WHERE OPT = 'WS.strassendaten')");
+                "SELECT OPT FROM SYSADM5.PTOPT A JOIN SYSADM5.PTOPT_TEMPL B ON A.ID = B.PTOPT_ID WHERE OPT LIKE 'WS.%'");
+
+        ArrayList<String> list = new ArrayList<String>();
+        while (r.next()) {
+            String s = r.getString(1);
+            System.out.println(s);
+            list.add(s);
+        }
+        return list.toArray(new String[0]);
+    }
+
+    private NodeList getValuesFromDB() throws Exception {
+        System.out.println("Selected: " + this.selectedWorkspace);
+
+        PreparedStatement pst = this.con.prepareStatement(
+                "SELECT STAND, WERT FROM SYSADM5.PTOPT_TEMPL WHERE PTOPT_ID = (SELECT ID FROM SYSADM5.PTOPT WHERE OPT = ?)");
+
+        pst.setString(1, this.selectedWorkspace);
+
+        ResultSet r = pst.executeQuery();
         r.next();
         this.stand = r.getDate(1);
         String xml = r.getString(2);
@@ -339,10 +386,11 @@ public class LayerChanger extends JFrame implements WindowListener, ActionListen
             logXML(standNeu, xmlString, "after");
 
             PreparedStatement pst = this.con.prepareStatement(
-                    "UPDATE SYSADM5.PTOPT_TEMPL SET STAND = ?, WERT = ? WHERE PTOPT_ID = (SELECT ID FROM SYSADM5.PTOPT WHERE OPT = 'WS.strassendaten')");
+                    "UPDATE SYSADM5.PTOPT_TEMPL SET STAND = ?, WERT = ? WHERE PTOPT_ID = (SELECT ID FROM SYSADM5.PTOPT WHERE OPT = ?)");
 
             pst.setDate(1, standNeu);
             pst.setString(2, xmlString);
+            pst.setString(3, this.selectedWorkspace);
             pst.execute();
 
             JOptionPane.showMessageDialog(this, "Gespeichert!");

@@ -53,18 +53,25 @@ class NodeTableModel implements TableModel {
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        try {
-            if (columnIndex == 0) // ID
-                return false;
-
-            if (this.findAttribut(rowIndex, "wmsUrl").getNodeValue().equals(""))
-                return false;
-
+        System.out.println("isCellEditable: " + rowIndex + " " + columnIndex);
+        if (columnIndex == 0) {
+            System.out.println("no");
+            return false;
+        } else if (columnIndex == 1 || columnIndex == 2) {
+            System.out.println("yes");
             return true;
+        }
+
+        try {
+            if (this.findAttribut(rowIndex, "wmsUrl").getNodeValue().equals("")) {
+                System.out.println("no");
+                return false;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        System.out.println("yes");
+        return true;
     }
 
     @Override
@@ -99,7 +106,7 @@ class NodeTableModel implements TableModel {
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         try {
-            if (this.findAttribut(rowIndex, "wmsUrl").getNodeValue().equals(""))
+            if (columnIndex != 2 && columnIndex != 1 && this.findAttribut(rowIndex, "wmsUrl").getNodeValue().equals(""))
                 return;
 
             if (aValue.equals(""))
