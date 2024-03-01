@@ -1,0 +1,13 @@
+WMS-Dienste mit mehr als einem Layer sind nicht möglich über den WebAdminClient, daher…
+
+SQL Developer
+SELECT ID FROM SYSADM5.PTOPT WHERE OPT = 'WS.strassendaten'
+ID = ‘319C3E4EE521DB16E053152A3E0A807B’
+
+Unter SYSADM5.PTOPT_TEMPL WHERE PTOPT_ID = ‚319C3E4EE521DB16E053152A3E0A807B‘
+STAND und WERT anpassen,
+Stand muss größer werden, ggf. in der Zukunft
+Daten aus Wert in Notepad++ kopieren, XML Tools „pretty print with line breaks“
+Daten anpassen, ggf. bestehenden WMS kopieren, position=“X“ muss fortlaufend sein
+XML-Tools „linarize xml“
+In Wert einfügen, Commit

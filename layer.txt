@@ -1,0 +1,14 @@
+PROD = 10.62.135.25:6543/PVERKPO001
+
+
+WMS 1.1
+https://geodienste.hamburg.de/HH_WMS_DOP_hochaufloesend?SERVICE=WMS&REQUEST=GetCapabilities
+dop_hochaufloesend_downscale,dop_hochaufloesend_highres
+
+WMS 1.1
+https://geodienste.hamburg.de/HH_WMS_ALKIS_Basiskarte?SERVICE=WMS&REQUEST=GetCapabilities
+0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,23,24,26,27,28,29,30,32,33,34,35,36,37
+
+WMS 1.3 und kein https
+http://geodienste.hamburg.de/HH_WMS_Geobasiskarten_SG?
+5,29,25,9,21,17,13,1
